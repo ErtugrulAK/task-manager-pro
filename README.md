@@ -1,96 +1,77 @@
-# 🚀 Task Manager Pro - Full-Stack Web Application
+# Task Manager Pro
 
-A modern, responsive full-stack task management application featuring secure user authentication, real-time Firestore database synchronization, serverless Firebase Cloud Functions, and dynamic UI animations with Framer Motion.
+Full-stack task manager: React (Create React App) client, Firebase Auth for
+accounts, Cloud Firestore for realtime task storage, and a Cloud Function that
+writes a welcome task when a user signs up. The app lives in
+`task-manager-pro/`; the repository name (`personal-portfolio`) predates this
+being its only content — renaming it to `task-manager-pro` is proposed, not
+done.
 
----
+## What the code actually does (verified against source)
 
-## 🌟 Key Features
+- **Auth**: email/password signup & login (`client/src/context/AuthContext.js`
+  listens to `onAuthStateChanged`); Firebase handles session persistence.
+  Routes outside `/login`/`/signup` render only when a user object exists.
+- **Tasks**: create / complete-pending toggle / inline edit / delete
+  (`TaskForm.js`, `TaskItem.js`); lists subscribe with `onSnapshot`, so two
+  open tabs update without refresh (`TaskList.js`).
+- **Isolation**: every query filters `userId == currentUser.uid`, and
+  `firestore.rules` enforce the same check server-side (read, create, update,
+  delete are UID-bound). A user cannot enumerate another user's tasks.
+- **Filters**: All / Pending / Completed buttons switch the Firestore query;
+  the status-filtered variant needs the composite index declared in
+  `firestore.indexes.json` — deploy it (see DEPLOYMENT.md).
+- **Welcome task**: `functions/index.js` (`addWelcomeTask`, auth trigger) adds
+  one pending task on user creation.
+- **UI**: Framer Motion route transitions, React Router v7, plain CSS.
 
-- 🔐 **User Authentication**: Secure signup, login, and session persistence powered by Firebase Auth.
-- 📋 **Real-Time Task Management**: Interactive CRUD operations (Create, Read, Update, Delete) synced in real-time with Cloud Firestore.
-- ⚙️ **Automated Serverless Workflows**: Firebase Cloud Functions automatically generate a customizable welcome task upon user account creation.
-- 🎨 **Fluid UI & Animations**: Page transition effects and dynamic list animations powered by React Router and Framer Motion.
-- 🎯 **Task Filtering**: Real-time task filtering by status (`All`, `Pending`, `Completed`).
-- 🛡️ **User Data Isolation**: Granular Firestore Security Rules ensuring users can strictly read/write only their own document data.
+Stack versions per `client/package.json`: React 19.2, Firebase JS SDK 12,
+Framer Motion 12, Router 7; functions use firebase-functions v5 (Node 18
+runtime declared — deprecated upstream, see Maintenance notes).
 
----
+## Run locally
 
-## 🛠️ Technology Stack
+Requires your own Firebase project (Auth with Email/Password enabled, one
+Firestore database). The Firebase web config values are build-time public,
+but nothing runs without a project you own.
 
-| Layer | Technology |
-| :--- | :--- |
-| **Frontend Core** | React 19, JavaScript (ES6+) |
-| **Styling & Motion** | Custom CSS3, Framer Motion, React Icons |
-| **Routing** | React Router v7 |
-| **Backend & Cloud Services** | Firebase Authentication, Cloud Firestore, Firebase Cloud Functions |
-| **Runtime & Hosting** | Node.js (v18+), Firebase Hosting |
-
----
-
-## 🏗️ Project Architecture
-
-```
-personal-portfolio/
-└── task-manager-pro/
-    ├── client/               # React Frontend Application
-    │   ├── public/           # Static assets & HTML template
-    │   └── src/
-    │       ├── components/   # Modular UI components (TaskForm, TaskItem, TaskList)
-    │       ├── context/      # React Authentication Context (AuthContext)
-    │       ├── pages/        # Route pages (HomePage, LoginPage, SignupPage)
-    │       ├── firebase.js   # SDK initialization & service exports
-    │       └── App.js        # Protected routes & Framer Motion transitions
-    ├── functions/            # Firebase Cloud Functions (Serverless Backend)
-    │   └── index.js          # User creation trigger (addWelcomeTask)
-    ├── firestore.rules       # Security rules for document-level user isolation
-    ├── firebase.json         # Firebase hosting & function deployment config
-    └── DEPLOYMENT.md         # Step-by-step deployment guide
+```bash
+cd task-manager-pro/client
+npm install
+cp .env.example .env.local     # fill in your project's config values
+npm start                      # http://localhost:3000
 ```
 
----
+Deploy is out of scope for a local evaluation; see
+[DEPLOYMENT.md](task-manager-pro/DEPLOYMENT.md) for hosting, functions,
+rules and index deployment.
 
-## 🚀 Getting Started
+## Project structure
 
-### Prerequisites
+```
+task-manager-pro/
+├── client/                 # CRA React app (public/, src/components, src/pages)
+│   └── src/firebase.js     # config from env vars; throws if unconfigured
+├── functions/index.js      # addWelcomeTask auth trigger
+├── firestore.rules         # per-document UID isolation
+├── firestore.indexes.json  # userId+status+createdAt composite index
+├── firebase.json           # hosting (client/build) + functions config
+└── DEPLOYMENT.md
+```
 
-- [Node.js](https://nodejs.org/) (v18 or later)
-- [npm](https://www.npmjs.com/)
-- [Firebase CLI](https://firebase.google.com/docs/cli) (`npm install -g firebase-tools`)
+## Maintenance notes (not fixed in this pass)
 
-### Installation & Setup
+- No test files exist despite @testing-library being installed; no CI.
+- Cloud Functions declare Node 18, which Google has deprecated for deploys;
+  bump `engines.node` and re-test when touching functions.
+- Functions use the 1st-gen `firebase-functions` API; it works with v5 but
+  2nd-gen (`onCreate` from `firebase-functions/v2/auth`) is the forward path.
+- `firestore.rules` have no explicit deny-all default outside the `tasks`
+  match block (Firestore denies by default, so behavior is correct, just
+  implicit).
+- React Scripts 5 is the maintenance end of CRA; ejecting or migrating to
+  Vite is a deliberate future step, not a bug.
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/ErtugrulAK/personal-portfolio.git
-   cd personal-portfolio/task-manager-pro
-   ```
+## License
 
-2. **Install Frontend Dependencies**:
-   ```bash
-   cd client
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Copy `.env.example` to `.env.local` inside `client/` and populate your Firebase project credentials:
-   ```bash
-   cp .env.example .env.local
-   ```
-
-4. **Run Locally**:
-   ```bash
-   npm start
-   ```
-   Open `http://localhost:3000` to view the application in your browser.
-
----
-
-## 📖 Deployment
-
-For detailed deployment instructions for Firebase Hosting and Cloud Functions, refer to the [Deployment Guide](task-manager-pro/DEPLOYMENT.md).
-
----
-
-## 📄 License
-
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+MIT — see [LICENSE](LICENSE).

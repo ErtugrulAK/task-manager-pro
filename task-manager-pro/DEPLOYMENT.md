@@ -11,6 +11,16 @@ npm install -g firebase-tools
 firebase login
 ```
 
+Also deploy the security rules and the Firestore composite index; without them the
+auth-gated queries in `TaskList.js` fail (reads denied / missing-index error):
+
+```bash
+firebase deploy --only firestore:rules,firestore:indexes
+```
+
+(`firestore.indexes.json` declares the `userId + status + createdAt` index that the
+Pending/Completed filters require.)
+
 ---
 
 ## Deployment Options
