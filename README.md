@@ -4,8 +4,18 @@ Full-stack task manager: React (Create React App) client, Firebase Auth for
 accounts, Cloud Firestore for realtime task storage, and a Cloud Function that
 writes a welcome task when a user signs up. The app lives in
 `task-manager-pro/`; the repository name (`personal-portfolio`) predates this
-being its only content — renaming it to `task-manager-pro` is proposed, not
-done.
+being its only content — the repository was renamed to `task-manager-pro` in October 2026
+(old URLs redirect).
+
+
+## Screens
+
+![Login](docs/screenshots/pp_login.png)
+![Sign up](docs/screenshots/pp_signup.png)
+*Auth screens captured running the real app locally against a demo Firebase
+configuration (project values `demo-local`, network mocked — no real account
+or data involved). The task dashboard itself needs your own Firebase project
+(see setup below).*
 
 ## What the code actually does (verified against source)
 
