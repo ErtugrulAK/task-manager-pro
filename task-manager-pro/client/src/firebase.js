@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 
 // Configuration comes from client/.env.local (see .env.example).
 // Firebase web config is not a secret (it ships in any deployed JS bundle),
@@ -28,5 +28,13 @@ const app = initializeApp(firebaseConfig);
 // Initialize Cloud Firestore and Authentication services
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// Development-only: when REACT_APP_FIREBASE_EMULATORS=1 the app talks to the
+// local Firebase Emulator Suite (see firebase.json) instead of any real
+// project. Used for offline demos and documentation screenshots.
+if (process.env.REACT_APP_FIREBASE_EMULATORS === "1") {
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+}
 
 export { db, auth };

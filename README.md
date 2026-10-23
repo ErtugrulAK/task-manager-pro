@@ -10,12 +10,23 @@ being its only content — the repository was renamed to `task-manager-pro` in O
 
 ## Screens
 
+![Dashboard](docs/screenshots/tmp_dashboard.png)
+*The real task dashboard: add form, All / Pending / Completed filters, and the
+`onSnapshot`-backed task list with per-task complete, edit and delete controls.*
+
+![Dashboard — completed](docs/screenshots/tmp_dashboard_completed.png)
+*The same view after completing three tasks — the checkbox drives `status` to
+`completed` and the item is styled with strikethrough (live, no refresh).*
+
 ![Login](docs/screenshots/pp_login.png)
 ![Sign up](docs/screenshots/pp_signup.png)
-*Auth screens captured running the real app locally against a demo Firebase
-configuration (project values `demo-local`, network mocked — no real account
-or data involved). The task dashboard itself needs your own Firebase project
-(see setup below).*
+
+> **Capture environment.** These were produced by running the actual app
+> against a fully **isolated Firebase Emulator Suite** (local Auth + Firestore
+> only, demo project `demo-tmp-docs`, the repo's own security rules). All five
+> tasks and the `demo@example.com` account are synthetic and exist only in that
+> emulator. Nothing here is a live/production Firebase capture, and no real
+> user data is shown. To reproduce locally see *Run locally* below.
 
 ## What the code actually does (verified against source)
 
@@ -55,6 +66,26 @@ npm start                      # http://localhost:3000
 Deploy is out of scope for a local evaluation; see
 [DEPLOYMENT.md](task-manager-pro/DEPLOYMENT.md) for hosting, functions,
 rules and index deployment.
+
+### Run with no Firebase project (offline demo)
+
+For a quick look — or to reproduce the screenshots above — the app can run
+entirely against the **Firebase Emulator Suite**, no Google account or real
+project needed. `firebase.json` already declares an `emulators` block and
+`client/src/firebase.js` connects to it when `REACT_APP_FIREBASE_EMULATORS=1`.
+You need Java 21+ and `firebase-tools` installed.
+
+```bash
+cd task-manager-pro
+echo '{"project_id":"demo-tmp-docs"}' > .firebaserc   # local only, git-ignored
+npx firebase emulators:start --project demo-tmp-docs --only auth,firestore
+# in another shell:
+cd client
+REACT_APP_FIREBASE_EMULATORS=1 BROWSER=none npm start
+```
+
+Sign up with any email/password; it is created only inside the emulator. The
+`demo-tmp-docs` prefix forces demo (fully-offline, data-purged-on-exit) mode.
 
 ## Project structure
 
